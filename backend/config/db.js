@@ -4,22 +4,21 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const pool = mysql.createPool({
-  host: "yamabiko.proxy.rlwy.net", // Sunucu host
-  port: 24760, // Port numarası
-  user: "root", // Kullanıcı adı
-  password: "XNpcNGoviOKfDNkHdBxpECMpFyMAmOnC", // Parola
-  database: "railway", // Veritabanı adı
+  host: "yamabiko.proxy.rlwy.net",
+  port: 24760,
+  user: "root",
+  password: "XNpcNGoviOKfDNkHdBxpECMpFyMAmOnC",
+  database: "railway",
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
-  connectTimeout: 60000, // 60 saniye bağlantı zaman aşımı
-  acquireTimeout: 60000, // 60 saniye alma zaman aşımı
-  timeout: 60000, // 60 saniye sorgu zaman aşımı
-  ssl: {
-    rejectUnauthorized: false, // SSL bağlantısı için doğrulama devre dışı bırakıldı
-  },
+  connectTimeout: 60000,        // Bağlantı zaman aşımı: 60 saniye
+  idleTimeout: 60000,          // Boşta kalma zaman aşımı: 60 saniye
+  maxIdle: 10,                 // Maksimum boşta bağlantı sayısı
+  enableKeepAlive: true,       // Bağlantıyı canlı tut
+  keepAliveInitialDelay: 0
 });
 
 // Bağlantıyı test et

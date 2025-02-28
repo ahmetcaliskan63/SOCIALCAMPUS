@@ -25,6 +25,15 @@ app.get("/", (req, res) => {
   res.json({ status: "API is running" });
 });
 
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'KLU Campus API çalışıyor',
+    version: '1.0.0'
+  });
+});
+
 // Kitap route'larını ekle
 const kitaplarRoutes = require("./routes/kitaplar");
 app.use("/api", kitaplarRoutes);
