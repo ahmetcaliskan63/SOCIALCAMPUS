@@ -4,50 +4,59 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const pool = mysql.createPool({
-  host: "yamabiko.proxy.rlwy.net",
-  port: 24760,
-  user: "root",
-  password: "XNpcNGoviOKfDNkHdBxpECMpFyMAmOnC",
-  database: "railway",
+  host: "yamabiko.proxy.rlwy.net", // Sunucu host
+  port: 24760, // Port numarası
+  user: "root", // Kullanıcı adı
+  password: "XNpcNGoviOKfDNkHdBxpECMpFyMAmOnC", // Parola
+  database: "railway", // Veritabanı adı
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
+  connectTimeout: 60000, // 60 saniye bağlantı zaman aşımı
+  acquireTimeout: 60000, // 60 saniye alma zaman aşımı
+  timeout: 60000, // 60 saniye sorgu zaman aşımı
+  ssl: {
+    rejectUnauthorized: false, // SSL bağlantısı için doğrulama devre dışı bırakıldı
+  },
 });
 
 // Bağlantıyı test et
-pool
-  .getConnection()
-  .then((connection) => {
-    console.log("Database bağlantısı başarılı");
-    connection.release();
-  })
-  .catch((err) => {
-    console.error("Database bağlantı hatası:", err);
-    process.exit(1); // Bağlantı başarısız ise uygulamayı durdur
-  });
+const testConnection = async (retries = 5) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const connection = await pool.getConnection();
+      console.log("Database bağlantısı başarılı");
+      connection.release();
+      return true;
+    } catch (err) {
+      console.error(`Bağlantı denemesi ${i + 1}/${retries} başarısız:`, err);
+      if (i === retries - 1) {
+        console.error("Maksimum deneme sayısına ulaşıldı");
+        throw err;
+      }
+      // 5 saniye bekle ve tekrar dene
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+    }
+  }
+};
 
-const mysql = require('mysql2/promise');
-
-const pool = mysql.createPool({
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'klucampus',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
+// İlk bağlantıyı test et
+testConnection().catch((err) => {
+  console.error("Database bağlantı hatası:", err);
+  process.exit(1); // Bağlantı başarısız ise uygulamayı durdur
 });
 
-// Test database connection
-pool.getConnection()
-    .then(connection => {
-        console.log('Database connection established successfully');
-        connection.release();
-    })
-    .catch(err => {
-        console.error('Error connecting to the database:', err);
-    });
+// Havuz hata olaylarını dinle
+pool.on("error", async (err) => {
+  console.error("Havuz hatası:", err);
+  if (err.code === "PROTOCOL_CONNECTION_LOST") {
+    console.log("Bağlantı kayboldu, yeniden bağlanılıyor...");
+    await testConnection();
+  }
+});
 
-module.exports = pool;
+module.exports = {
+  pool,
+};
