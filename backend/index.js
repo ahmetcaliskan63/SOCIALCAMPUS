@@ -105,6 +105,111 @@ app.post("/kullanicilar", async (req, res) => {
   }
 });
 
+// Mesaj oluşturma endpoint'i
+app.post("/api/messages", async (req, res) => {
+  try {
+    const messageData = {
+      id: req.body.id,
+      kullanici_id: req.body.kullanici_id,
+      kullanici_adi: req.body.kullanici_adi,
+      icerik: req.body.icerik
+    };
+
+    const [result] = await db.query(
+      "INSERT INTO mesajlar (id, kullanici_id, kullanici_adi, icerik) VALUES (?, ?, ?, ?)",
+      [messageData.id, messageData.kullanici_id, messageData.kullanici_adi, messageData.icerik]
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "Mesaj oluşturuldu",
+      data: messageData
+    });
+  } catch (error) {
+    console.error("Mesaj oluşturma hatası:", error);
+    res.status(500).json({
+      success: false,
+      error: "Mesaj oluşturulamadı",
+      message: error.message
+    });
+  }
+});
+
+// Tüm mesajları getirme endpoint'i
+app.get("/api/messages", async (req, res) => {
+  try {
+    const [messages] = await db.query(
+      "SELECT m.*, COUNT(mb.mesaj_id) as begeni_sayisi FROM mesajlar m " +
+      "LEFT JOIN mesaj_begeniler mb ON m.id = mb.mesaj_id " +
+      "GROUP BY m.id " +
+      "ORDER BY m.olusturma_tarihi DESC"
+    );
+
+    res.json({
+      success: true,
+      data: messages
+    });
+  } catch (error) {
+    console.error("Mesaj getirme hatası:", error);
+    res.status(500).json({
+      success: false,
+      error: "Mesajlar alınamadı",
+      message: error.message
+    });
+  }
+});
+
+// Kullanıcının mesajlarını getirme endpoint'i
+app.get("/api/messages/user/:kullanici_id", async (req, res) => {
+  try {
+    const [messages] = await db.query(
+      "SELECT * FROM mesajlar WHERE kullanici_id = ? ORDER BY olusturma_tarihi DESC",
+      [req.params.kullanici_id]
+    );
+
+    res.json({
+      success: true,
+      data: messages
+    });
+  } catch (error) {
+    console.error("Kullanıcı mesajları getirme hatası:", error);
+    res.status(500).json({
+      success: false,
+      error: "Kullanıcı mesajları alınamadı",
+      message: error.message
+    });
+  }
+});
+
+// Mesaj silme endpoint'i
+app.delete("/api/messages/:id", async (req, res) => {
+  try {
+    const [result] = await db.query(
+      "DELETE FROM mesajlar WHERE id = ? AND kullanici_id = ?",
+      [req.params.id, req.body.kullanici_id]
+    );
+
+    if (result.affectedRows > 0) {
+      res.json({
+        success: true,
+        message: "Mesaj başarıyla silindi"
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "Mesaj bulunamadı veya silme yetkisi yok"
+      });
+    }
+  } catch (error) {
+    console.error("Mesaj silme hatası:", error);
+    res.status(500).json({
+      success: false,
+      error: "Mesaj silinemedi",
+      message: error.message
+    });
+  }
+});
+
 // Error handling
 app.use((err, req, res, next) => {
   console.error("Hata yakalandı:", err);
