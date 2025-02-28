@@ -25,7 +25,7 @@ import * as Haptics from "expo-haptics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 
-const API_URL = 'http://192.168.14.242:5000/api/messages';  // Backend sunucunuzun IP adresi ve portu
+const API_URL = 'https://klucampus-production.up.railway.app/api'; // Backend sunucunuzun IP adresi ve portu
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 // Cache sabitleri

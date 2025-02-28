@@ -2,7 +2,7 @@ const axios = require('axios');
 
 class ApiAdapter {
     constructor() {
-        this.baseURL = 'http://192.168.38.242:5000/api';
+        this.baseURL = 'http://192.168.141.242:5000/api';
         this.token = null;
     }
 
@@ -258,4 +258,4 @@ class ApiAdapter {
     }
 }
 
-module.exports = new ApiAdapter(); 
+module.exports = new ApiAdapter();
