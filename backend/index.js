@@ -4,21 +4,12 @@ const db = require("./config/db");
 const app = express();
 
 // CORS ayarlarını güncelle
-app.use(
-  cors({
-    origin: [
-      "http://localhost:19006",
-      "http://localhost:19000",
-      "exp://192.168.1.144:8081",
-      "https://klucampus-production.up.railway.app",
-      "https://*.railway.app",
-    ],
+app.use(cors({
+    origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-    maxAge: 86400,
-  })
-);
+    credentials: false
+}));
 
 // Timeout middleware ekle
 app.use((req, res, next) => {
