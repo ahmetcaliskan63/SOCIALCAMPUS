@@ -58,52 +58,60 @@ app.get("/test", async (req, res) => {
 // Kullanıcı oluşturma endpoint'i
 app.post("/kullanicilar", async (req, res) => {
   try {
-    // Gelen ham veriyi detaylı logla
     console.log("Ham veri detayları:", req.body);
 
-    // Veriyi kontrol et ve alan isimlerini eşleştir
     const userData = {
-      tam_ad: req.body.tam_ad || "",
-      fakulte: req.body.faculty || "", // faculty -> fakulte
-      fakulte_adi: req.body.faculty || "", // faculty -> fakulte_adi
-      bolum: req.body.department || "", // department -> bolum
-      sartlari_kabul: req.body.termsAccepted ? 1 : 0, // termsAccepted -> sartlari_kabul
-      sozlesmeyi_kabul: req.body.eulaAccepted ? 1 : 0, // eulaAccepted -> sozlesmeyi_kabul
+      tam_ad: req.body.tam_ad,
+      fakulte: req.body.fakulte,
+      fakulte_adi: req.body.fakulte_adi,
+      bolum: req.body.bolum,
+      sartlari_kabul: req.body.sartlari_kabul ? 1 : 0,
+      sozlesmeyi_kabul: req.body.sozlesmeyi_kabul ? 1 : 0
     };
 
     console.log("Dönüştürülmüş veri:", userData);
 
-    // Veritabanı sorgusu
-    const [result] = await db.execute(
-      "INSERT INTO kullanicilar (tam_ad, fakulte, fakulte_adi, bolum, sartlari_kabul, sozlesmeyi_kabul) VALUES (?, ?, ?, ?, ?, ?)",
-      [
-        userData.tam_ad,
-        userData.fakulte,
-        userData.fakulte_adi,
-        userData.bolum,
-        userData.sartlari_kabul,
-        userData.sozlesmeyi_kabul,
-      ]
-    );
+    const connection = await db.getConnection();
+    
+    try {
+      await connection.beginTransaction();
 
-    console.log("Insert result:", result);
+      const [result] = await connection.query(
+        "INSERT INTO kullanicilar (tam_ad, fakulte, fakulte_adi, bolum, sartlari_kabul, sozlesmeyi_kabul) VALUES (?, ?, ?, ?, ?, ?)",
+        [
+          userData.tam_ad,
+          userData.fakulte,
+          userData.fakulte_adi,
+          userData.bolum,
+          userData.sartlari_kabul,
+          userData.sozlesmeyi_kabul
+        ]
+      );
 
-    // Oluşturulan kullanıcının bilgilerini al
-    const [users] = await db.execute(
-      "SELECT * FROM kullanicilar WHERE id = ?",
-      [result.insertId]
-    );
+      const [users] = await connection.query(
+        "SELECT * FROM kullanicilar WHERE id = ?",
+        [result.insertId]
+      );
 
-    res.json({
-      success: true,
-      message: "Kullanıcı oluşturuldu",
-      data: users[0],
-    });
+      await connection.commit();
+
+      res.json({
+        success: true,
+        message: "Kullanıcı oluşturuldu",
+        data: users[0]
+      });
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
   } catch (error) {
     console.error("Detaylı hata:", error);
     res.status(500).json({
-      error: error.message,
-      details: "Sunucu hatası oluştu",
+      success: false,
+      error: "Kullanıcı oluşturulamadı",
+      message: error.message
     });
   }
 });
