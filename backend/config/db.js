@@ -56,6 +56,5 @@ pool.on("error", async (err) => {
   }
 });
 
-module.exports = {
-  pool,
-};
+// Export the pool directly instead of an object
+module.exports = pool;
