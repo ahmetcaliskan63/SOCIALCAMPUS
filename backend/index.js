@@ -3,14 +3,125 @@ const cors = require("cors");
 const db = require("./config/db");
 const app = express();
 
-// CORS ayarları
+// CORS ayarlarını güncelle
 app.use(
   cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    origin: [
+      "http://localhost:19006",
+      "http://localhost:19000",
+      "exp://192.168.1.144:8081",
+      "https://klucampus-production.up.railway.app",
+      "https://*.railway.app",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+    maxAge: 86400,
   })
 );
+
+// Timeout middleware ekle
+app.use((req, res, next) => {
+  req.setTimeout(30000); // 30 saniye
+  res.setTimeout(30000);
+  next();
+});
+
+// Hata yakalama middleware'ini güncelle
+app.use((err, req, res, next) => {
+  console.error("Hata detayı:", {
+    hataKodu: err.code,
+    hataMesaji: err.message,
+    yol: req.path,
+    metod: req.method,
+  });
+
+  // Network hatalarını yakala
+  if (err.code === "ECONNRESET" || err.code === "ECONNABORTED") {
+    return res.status(503).json({
+      success: false,
+      error: "Bağlantı hatası",
+      message: "Sunucu bağlantısı kesildi, lütfen tekrar deneyin",
+    });
+  }
+
+  res.status(err.status || 500).json({
+    success: false,
+    error: "İşlem başarısız",
+    message: err.message || "Sunucu hatası oluştu",
+  });
+});
+
+// Mesaj endpoint'lerini güncelle
+app.get("/api/messages", async (req, res) => {
+  try {
+    const [messages] = await db.query(
+      `SELECT 
+        m.*, 
+        COUNT(mb.mesaj_id) as begeni_sayisi 
+      FROM mesajlar m 
+      LEFT JOIN mesaj_begeniler mb ON m.id = mb.mesaj_id 
+      GROUP BY m.id 
+      ORDER BY m.olusturma_tarihi DESC 
+      LIMIT 50`
+    );
+
+    if (!messages) {
+      return res.status(404).json({
+        success: false,
+        message: "Mesaj bulunamadı",
+      });
+    }
+
+    res.json({
+      success: true,
+      data: messages,
+    });
+  } catch (error) {
+    console.error("Mesaj getirme hatası:", error);
+    res.status(500).json({
+      success: false,
+      error: "Mesajlar alınamadı",
+      message: "Sunucu hatası oluştu, lütfen tekrar deneyin",
+    });
+  }
+});
+
+// Mesaj oluşturma endpoint'ini güncelle
+app.post("/api/messages", async (req, res) => {
+  try {
+    if (!req.body.icerik || !req.body.kullanici_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Gerekli alanlar eksik",
+      });
+    }
+
+    const messageData = {
+      id: req.body.id,
+      kullanici_id: req.body.kullanici_id,
+      kullanici_adi: req.body.kullanici_adi,
+      icerik: req.body.icerik,
+    };
+
+    const [result] = await db.query("INSERT INTO mesajlar SET ?", [
+      messageData,
+    ]);
+
+    res.status(201).json({
+      success: true,
+      message: "Mesaj başarıyla oluşturuldu",
+      data: { ...messageData, id: result.insertId },
+    });
+  } catch (error) {
+    console.error("Mesaj oluşturma hatası:", error);
+    res.status(500).json({
+      success: false,
+      error: "Mesaj oluşturulamadı",
+      message: "Sunucu hatası oluştu, lütfen tekrar deneyin",
+    });
+  }
+});
 
 app.use(express.json());
 
@@ -26,11 +137,11 @@ app.get("/", (req, res) => {
 });
 
 // Root endpoint
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
   res.json({
     success: true,
-    message: 'KLU Campus API çalışıyor',
-    version: '1.0.0'
+    message: "KLU Campus API çalışıyor",
+    version: "1.0.0",
   });
 });
 
@@ -66,7 +177,7 @@ app.post("/kullanicilar", async (req, res) => {
       fakulte_adi: req.body.fakulte_adi,
       bolum: req.body.bolum,
       sartlari_kabul: req.body.sartlari_kabul ? 1 : 0,
-      sozlesmeyi_kabul: req.body.sozlesmeyi_kabul ? 1 : 0
+      sozlesmeyi_kabul: req.body.sozlesmeyi_kabul ? 1 : 0,
     };
 
     console.log("Dönüştürülmüş veri:", userData);
@@ -80,27 +191,25 @@ app.post("/kullanicilar", async (req, res) => {
         userData.fakulte_adi,
         userData.bolum,
         userData.sartlari_kabul,
-        userData.sozlesmeyi_kabul
+        userData.sozlesmeyi_kabul,
       ]
     );
 
-    const [users] = await db.query(
-      "SELECT * FROM kullanicilar WHERE id = ?",
-      [result.insertId]
-    );
+    const [users] = await db.query("SELECT * FROM kullanicilar WHERE id = ?", [
+      result.insertId,
+    ]);
 
     res.json({
       success: true,
       message: "Kullanıcı oluşturuldu",
-      data: users[0]
+      data: users[0],
     });
-
   } catch (error) {
     console.error("Detaylı hata:", error);
     res.status(500).json({
       success: false,
       error: "Kullanıcı oluşturulamadı",
-      message: error.message
+      message: error.message,
     });
   }
 });
@@ -112,25 +221,30 @@ app.post("/api/messages", async (req, res) => {
       id: req.body.id,
       kullanici_id: req.body.kullanici_id,
       kullanici_adi: req.body.kullanici_adi,
-      icerik: req.body.icerik
+      icerik: req.body.icerik,
     };
 
     const [result] = await db.query(
       "INSERT INTO mesajlar (id, kullanici_id, kullanici_adi, icerik) VALUES (?, ?, ?, ?)",
-      [messageData.id, messageData.kullanici_id, messageData.kullanici_adi, messageData.icerik]
+      [
+        messageData.id,
+        messageData.kullanici_id,
+        messageData.kullanici_adi,
+        messageData.icerik,
+      ]
     );
 
     res.status(201).json({
       success: true,
       message: "Mesaj oluşturuldu",
-      data: messageData
+      data: messageData,
     });
   } catch (error) {
     console.error("Mesaj oluşturma hatası:", error);
     res.status(500).json({
       success: false,
       error: "Mesaj oluşturulamadı",
-      message: error.message
+      message: error.message,
     });
   }
 });
@@ -140,21 +254,21 @@ app.get("/api/messages", async (req, res) => {
   try {
     const [messages] = await db.query(
       "SELECT m.*, COUNT(mb.mesaj_id) as begeni_sayisi FROM mesajlar m " +
-      "LEFT JOIN mesaj_begeniler mb ON m.id = mb.mesaj_id " +
-      "GROUP BY m.id " +
-      "ORDER BY m.olusturma_tarihi DESC"
+        "LEFT JOIN mesaj_begeniler mb ON m.id = mb.mesaj_id " +
+        "GROUP BY m.id " +
+        "ORDER BY m.olusturma_tarihi DESC"
     );
 
     res.json({
       success: true,
-      data: messages
+      data: messages,
     });
   } catch (error) {
     console.error("Mesaj getirme hatası:", error);
     res.status(500).json({
       success: false,
       error: "Mesajlar alınamadı",
-      message: error.message
+      message: error.message,
     });
   }
 });
@@ -169,14 +283,14 @@ app.get("/api/messages/user/:kullanici_id", async (req, res) => {
 
     res.json({
       success: true,
-      data: messages
+      data: messages,
     });
   } catch (error) {
     console.error("Kullanıcı mesajları getirme hatası:", error);
     res.status(500).json({
       success: false,
       error: "Kullanıcı mesajları alınamadı",
-      message: error.message
+      message: error.message,
     });
   }
 });
@@ -192,12 +306,12 @@ app.delete("/api/messages/:id", async (req, res) => {
     if (result.affectedRows > 0) {
       res.json({
         success: true,
-        message: "Mesaj başarıyla silindi"
+        message: "Mesaj başarıyla silindi",
       });
     } else {
       res.status(404).json({
         success: false,
-        message: "Mesaj bulunamadı veya silme yetkisi yok"
+        message: "Mesaj bulunamadı veya silme yetkisi yok",
       });
     }
   } catch (error) {
@@ -205,7 +319,7 @@ app.delete("/api/messages/:id", async (req, res) => {
     res.status(500).json({
       success: false,
       error: "Mesaj silinemedi",
-      message: error.message
+      message: error.message,
     });
   }
 });
