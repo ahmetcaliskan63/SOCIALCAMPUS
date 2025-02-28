@@ -53,21 +53,27 @@ export default function LoginScreen({ onLogin }) {
 
     const handleInputChange = (name, value) => {
         console.log('handleInputChange çağrıldı:', { name, value });
-
+    
         if (name === 'tam_ad') {
-            // Sadece harf ve boşluklara izin ver
+            // Türkçe karakterler ve boşluklar için düzeltilmiş regex
             let cleanedText = value;
             
-            // Türkçe karakterleri ve boşlukları koru
-            cleanedText = cleanedText.replace(/[^a-zA-ZğĞıİöÖüÜşŞçÇ ]/g, '');
+            // Türkçe karakterleri ve Latin alfabesini koru
+            cleanedText = cleanedText.replace(/[^a-zA-ZğĞıİöÖüÜşŞçÇ\s]/g, '');
             
-            // Birden fazla boşluğu tek boşluğa indir, ama sondaki boşluğu koru
+            // Boşluk yönetimi
             if (value.endsWith(' ')) {
                 cleanedText = cleanedText.replace(/\s+/g, ' ');
             } else {
                 cleanedText = cleanedText.replace(/\s+/g, ' ').trim();
             }
-
+    
+            // İlk harfleri büyük yap
+            cleanedText = cleanedText.split(' ')
+                .map(word => word.charAt(0).toLocaleUpperCase('tr-TR') + 
+                            word.slice(1).toLocaleLowerCase('tr-TR'))
+                .join(' ');
+    
             console.log('Ad Soyad işleniyor:', {
                 girilen: value,
                 temizlenmis: cleanedText,
@@ -75,7 +81,7 @@ export default function LoginScreen({ onLogin }) {
                 boslukVar: cleanedText.includes(' '),
                 sonKarakterBosluk: cleanedText.endsWith(' ')
             });
-
+    
             setFormData(prevState => ({
                 ...prevState,
                 tam_ad: cleanedText
@@ -96,11 +102,12 @@ export default function LoginScreen({ onLogin }) {
             setIsSubmitted(true);
 
             const requestData = {
-                tam_ad: formData.tam_ad,
-                faculty: formData.faculty,
-                department: formData.department,
-                termsAccepted: formData.termsAccepted,
-                eulaAccepted: formData.eulaAccepted
+                tam_ad: formData.tam_ad.trim(),
+                fakulte: formData.faculty,
+                fakulte_adi: facultiesData[formData.faculty]?.name || formData.faculty,
+                bolum: formData.department,
+                sartlari_kabul: formData.termsAccepted,
+                sozlesmeyi_kabul: formData.eulaAccepted
             };
 
             console.log('Gönderilen veri:', requestData);
@@ -108,8 +115,12 @@ export default function LoginScreen({ onLogin }) {
             const response = await userService.createUser(requestData);
             console.log('API yanıtı:', response);
             
-            // Başarılı yanıt kontrolü - response.data yerine response'un kendisini kontrol ediyoruz
-            if (response && response.success && response.data) {
+            if (!response) {
+                throw new Error('Sunucudan yanıt alınamadı');
+            }
+
+            // Yanıt kontrolü
+            if (response.success && response.data && response.data.id) {
                 const userData = {
                     id: response.data.id.toString(),
                     tam_ad: response.data.tam_ad,
@@ -118,32 +129,23 @@ export default function LoginScreen({ onLogin }) {
                 };
                 
                 try {
-                    // AsyncStorage işlemleri
-                    await Promise.all([
-                        AsyncStorage.setItem('userData', JSON.stringify(userData)),
-                        AsyncStorage.setItem('userLoggedIn', 'true')
-                    ]);
+                    await AsyncStorage.setItem('userData', JSON.stringify(userData));
+                    await AsyncStorage.setItem('userLoggedIn', 'true');
 
-                    // Yönlendirme işlemi
                     if (onLogin) {
-                        onLogin();
+                        onLogin(userData); // userData'yı onLogin'e geçir
                     }
 
-                    // Başarı mesajı
-                    setTimeout(() => {
-                        Alert.alert(
-                            'Başarılı',
-                            'Kaydınız başarıyla tamamlandı!'
-                        );
-                    }, 100);
-
+                    Alert.alert(
+                        'Başarılı',
+                        'Kaydınız başarıyla tamamlandı!'
+                    );
                 } catch (storageError) {
                     console.error('Storage hatası:', storageError);
-                    Alert.alert('Hata', 'Kullanıcı bilgileri kaydedilirken bir hata oluştu.');
-                    setIsSubmitted(false);
+                    throw new Error('Kullanıcı bilgileri kaydedilemedi');
                 }
             } else {
-                throw new Error('Geçersiz sunucu yanıtı');
+                throw new Error(response.message || 'Kayıt işlemi başarısız oldu');
             }
         } catch (error) {
             console.error('Kayıt hatası:', error);
@@ -622,4 +624,4 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#333',
     },
-}); 
+});

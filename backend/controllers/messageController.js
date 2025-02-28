@@ -1,9 +1,13 @@
 const Message = require("../models/messageModel");
 const { v4: uuidv4 } = require("uuid");
+const { pool } = require("../config/db");
 
 // Mesaj oluştur
 const createMessage = async (req, res) => {
+  let connection;
   try {
+    connection = await pool.getConnection();
+
     // İstek verilerini kontrol et
     if (!req.body.icerik || !req.user || !req.user.id) {
       return res.status(400).json({
@@ -19,13 +23,16 @@ const createMessage = async (req, res) => {
       icerik: req.body.icerik,
     };
 
+    // Veritabanı bağlantısını kontrol et
+    await connection.ping();
+
     // Mesajı oluştur
     const result = await Message.create(messageData);
 
     if (result) {
       return res.status(201).json({
         success: true,
-        data: result,
+        data: messageData,
       });
     }
 
@@ -33,11 +40,26 @@ const createMessage = async (req, res) => {
   } catch (error) {
     console.error("Mesaj oluşturma hatası:", error);
 
-    return res.status(error.status || 500).json({
+    let errorMessage = "Mesaj gönderilirken bir hata oluştu";
+    let statusCode = 500;
+
+    if (error.code === 'ECONNREFUSED') {
+      errorMessage = "Veritabanına bağlanılamıyor";
+      statusCode = 503;
+    } else if (error.code === 'PROTOCOL_CONNECTION_LOST') {
+      errorMessage = "Veritabanı bağlantısı koptu";
+      statusCode = 503;
+    }
+
+    return res.status(statusCode).json({
       success: false,
-      message: error.message || "Mesaj gönderilirken bir hata oluştu",
+      message: errorMessage,
       error: process.env.NODE_ENV === "development" ? error.stack : undefined,
     });
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 };
 
