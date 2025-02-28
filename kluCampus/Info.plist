@@ -1,0 +1,4 @@
+<key>NSPhotoLibraryUsageDescription</key>
+<string>Fotoğraflara erişim izni gerekli.</string>
+<key>NSCameraUsageDescription</key>
+<string>Kamera izni gerekli.</string>

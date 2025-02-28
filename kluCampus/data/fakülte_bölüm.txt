@@ -1,0 +1,71 @@
+Tıp Fakültesi : 
+Tıp bölümü
+
+Fen Edebiyat Fakültesi : 
+Batı Dilleri ve Edebiyatları Bölümü
+Çağdaş Lehçeleri ve Edebiyatları Bölümü
+Eğitim Bilimleri Bölümü
+Felsefe Bölümü
+Fizik Bölümü
+Kimya Bölümü
+Matematik Bölümü
+Moleküler Biyoloji ve Genetik Bölümü
+Mütercim Tercümanlık Bölümü
+Psikoloji Bölümü
+Sosyoloji Bölümü
+Tarih Bölümü
+Türk Dili ve Edebiyatı Bölümü
+
+İktisadi ve İdari Bilimler Fakültesi: 
+Çalışma Ekonomisi ve Endüstri İlişkileri Bölümü
+Ekonometri Bölümü
+İktisat Bölümü...
+İktisat (İngilizce) Programı
+İşletme Bölümü
+İnsan Kaynakları Bölümü
+Maliye Bölümü
+Siyaset Bilimi ve Kamu Yönetimi Bölümü
+Uluslararası İlişkiler Bölümü
+Yönetim Bilişim Sistemleri
+
+Hukuk Fakültesi : Hukuk Bölümü
+
+Mühendislik Fakültesi:
+Elektrik Elektronik Mühendisliği
+Endüstri Mühendisliği
+Gıda Mühendisliği
+İnşaat Mühendisliği
+Makine Mühendisliği
+Yazılım Mühendisliği
+
+Teknoloji Fakültesi:
+Enerji Sistemleri Mühendisliği
+Mekatronik Mühendisliği
+
+Lüleburgaz Havacılık ve Uzay Bilimleri Fakültesi:
+Havacılık Yönetimi Bölümü
+Uçak Bakım ve Onarım Bölümü
+Pilotaj Bölümü
+Havacılık ve Uzay Mühendisliği Bölümü
+Havacılık Elektrik ve Elektroniği
+
+İlahiyat Fakültesi:
+İlahiyat Bölümü
+
+Mimarlık Fakültesi:
+Mimarlık Bölümü
+Şehir ve Bölge Planlama Bölümü
+Peyzaj Mimarlığı Bölümü
+İç Mimarlık Bölümü
+
+
+Turizm Fakültesi:
+Turizm İşletmeciliği
+Turizm Rehberliği
+Rekreasyon Yönetimi
+Gastronomi ve Mutfak Sanatları
+
+Uygulamalı  Bilimler Fakültesi:
+Finans ve Bankacılık
+Muhasebe ve Finans Yönetimi
+Uluslararası Ticaret ve Lojistik

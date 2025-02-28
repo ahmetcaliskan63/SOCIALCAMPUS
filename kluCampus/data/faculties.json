@@ -1,0 +1,119 @@
+{
+    "fen_edebiyat": {
+        "name": "Fen Edebiyat Fakültesi",
+        "departments": [
+            "Batı Dilleri ve Edebiyatları",
+            "Çağdaş Türk Lehçeleri ve Edebiyatları",
+            "Eğitim Bilimleri",
+            "Felsefe",
+            "Fizik",
+            "Kimya",
+            "Matematik",
+            "Moleküler Biyoloji ve Genetik",
+            "Mütercim-Tercümanlık",
+            "Psikoloji",
+            "Sosyoloji",
+            "Tarih",
+            "Türk Dili ve Edebiyatı"
+        ]
+    },
+    "hukuk": {
+        "name": "Hukuk Fakültesi",
+        "departments": [
+            "Hukuk"
+        ]
+    },
+    "iibf": {
+        "name": "İktisadi ve İdari Bilimler Fakültesi",
+        "departments": [
+            "Çalışma Ekonomisi ve Endüstri İlişkileri",
+            "Ekonometri",
+            "İktisat",
+            "İşletme",
+            "İnsan Kaynakları Bölümü",
+            "Maliye",
+            "Siyaset Bilimi ve Kamu Yönetimi",
+            "Uluslararası İlişkiler",
+            "Yönetim Bilişim Sistemleri"
+        ]
+    },
+    "ilahiyat": {
+        "name": "İlahiyat Fakültesi",
+        "departments": [
+            "İlahiyat"
+        ]
+    },
+    "havacilik": {
+        "name": "Lüleburgaz Havacılık ve Uzay Bilimleri Fakültesi",
+        "departments": [
+            "Havacılık Yönetimi",
+            "Uçak Bakım ve Onarım",
+            "Pilotaj",
+            "Havacılık ve Uzay Mühendisliği",
+            "Havacılık Elektrik ve Elektroniği"
+        ]
+    },
+    "mimarlik": {
+        "name": "Mimarlık Fakültesi",
+        "departments": [
+            "Mimarlık",
+            "Peyzaj Mimarlığı",
+            "Şehir ve Bölge Planlama",
+            "İç Mimarlık"
+        ]
+    },
+    "muhendislik": {
+        "name": "Mühendislik Fakültesi",
+        "departments": [
+            "Elektrik Elektronik Mühendisliği",
+            "Endüstri Mühendisliği",
+            "Gıda Mühendisliği",
+            "İnşaat Mühendisliği",
+            "Makine Mühendisliği",
+            "Yazılım Mühendisliği"
+        ]
+    },
+    "saglik": {
+        "name": "Sağlık Bilimleri Fakültesi",
+        "departments": [
+            "Beslenme ve Diyetetik",
+            "Çocuk Gelişimi",
+            "Ebelik",
+            "Fizyoterapi ve Rehabilitasyon",
+            "Hemşirelik",
+            "Sağlık Yönetimi",
+            "Sosyal Hizmet"
+        ]
+    },
+    "teknoloji": {
+        "name": "Teknoloji Fakültesi",
+        "departments": [
+            "Enerji Sistemleri Mühendisliği",
+            "Mekatronik Mühendisliği"
+        ]
+    },
+    "tip": {
+        "name": "Tıp Fakültesi",
+        "departments": [
+            "Tıp"
+        ]
+    },
+    "turizm": {
+        "name": "Turizm Fakültesi",
+        "departments": [
+            "Gastronomi ve Mutfak Sanatları",
+            "Rekreasyon Yönetimi",
+            "Turizm İşletmeciliği",
+            "Turizm Rehberliği"
+        ]
+    },
+    "uygulamali_bilimler": {
+        "name": "Uygulamalı Bilimler Fakültesi",
+        "departments": [
+            "Finans ve Bankacılık",
+            "Havacılık Yönetimi",
+            "Muhasebe ve Finans Yönetimi",
+            "Uluslararası Ticaret ve Lojistik"
+        ]
+    }
+} 

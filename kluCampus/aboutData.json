@@ -1,0 +1,12 @@
+{
+  "title": "Uygulama Hakkında",
+  "welcome": "Hoş Geldiniz! Kırklareli Üniversitesi'nin Mobil Uygulaması",
+  "description": "Kırklareli Üniversitesi'nin öğrenci deneyimini en üst düzeye çıkarmak için tasarlanmış olan SOCİALCAMPUS uygulaması, siz değerli öğrencilerimizin günlük yaşantısını kolaylaştırmak üzere geliştirilmiştir. Uygulama, bilgiye hızlı erişim sağlayarak öğrencilerin akademik ve sosyal yaşamlarını zenginleştirmeyi amaçlar.",
+  "developer": "Uygulamayı Kırklareli Üniversitesi'nde okuyan Yazılım Mühendisliği öğrencileri olarak gönüllü geliştirdik. Amacımız, öğrenci topluluğuna katkıda bulunmak ve onların deneyimlerini iyileştirmektir.",
+  "features": {
+    "foodInfo": "'Bugün yemekte ne var?' sorusunun yanıtını SOCİALCAMPUS Uygulaması ile öğrenebilirsiniz. Günlük yemek menülerini kolayca görüntüleyebilir ve sağlıklı beslenme tercihlerinizle ilgili bilgilere ulaşabilirsiniz.",
+    "socialInfo": "Okul gündemini takip ederek sosyal etkinliklere katılabilir, arkadaşlarınızla etkileşimde bulunarak sosyalleşme imkanlarını artırabilirsiniz.",
+    "clubsInfo": "Okuldaki kulüpleri görüntüleyip, sosyal medya adresleri, yönetici ve danışman hocalara ulaşabilirsiniz. Bu sayede ilginizi çeken aktiviteleri takip edebilirsiniz.",
+    "salesInfo": "Üst sınıflardan kitap, kırtasiye veya diğer eşyaları satın alarak ihtiyaçlarınızı karşılayabilir, aynı zamanda kendi eşyalarınızı da satışa sunabilirsiniz."
+  }
+}

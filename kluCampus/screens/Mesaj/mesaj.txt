@@ -1,0 +1,584 @@
+import React, { useState } from 'react';
+import { View, FlatList, Text, TextInput, StyleSheet, TouchableOpacity, Modal, Button, Image, Animated } from 'react-native';
+import { IconButton } from 'react-native-paper';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { MaterialIcons } from '@expo/vector-icons';
+
+const MessageScreen = () => {
+  const [newMessage, setNewMessage] = useState('');
+  const [selectedMessage, setSelectedMessage] = useState(null);
+  const [newComment, setNewComment] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [messages, setMessages] = useState([
+    {
+      id: '1',
+      user: 'Haticehj',
+      text: 'KLUCAMPUS uygulaması sayesinde kampüsteki tüm etkinliklerden haberdar olabiliyorum. Gerçekten çok faydalı!',
+      likes: 10,
+      comments: 2,
+      timestamp: '2024-10-14 12:30',
+      profileImage: 'https://randomuser.me/api/portraits/women/1.jpg',
+      commentList: [
+        { user: 'AliVeli', text: 'Harika bir yorum!', profileImage: 'https://randomuser.me/api/portraits/men/2.jpg' }
+      ],
+      isLiked: false,
+      scale: new Animated.Value(1), // Initialize scale for animation
+    },
+    // {
+    //   id: '2',
+    //   user: 'AliVeli',
+    //   text: 'KLU öğrenci topluluklarına nasıl katılabilirim? KLUCAMPUS’te topluluklara erişim var mı?',
+    //   likes: 5,
+    //   comments: 3,
+    //   timestamp: '2024-10-14 12:35',
+    //   profileImage: 'https://randomuser.me/api/portraits/men/3.jpg',
+    //   commentList: [
+    //     { user: 'Haticehj', text: 'Topluluklar sayfası var.', profileImage: 'https://randomuser.me/api/portraits/women/1.jpg' },
+    //     { user: 'ZeynepS', text: 'Oradan katılabilirsiniz.', profileImage: 'https://randomuser.me/api/portraits/women/4.jpg' }
+    //   ],
+    //   isLiked: false,
+    //   scale: new Animated.Value(1), // Initialize scale for animation
+    // },
+    // {
+    //   id: '3',
+    //   user: 'Haticehj',
+    //   text: 'KLUCAMPUS uygulaması sayesinde kampüsteki tüm etkinliklerden haberdar olabiliyorum. Gerçekten çok faydalı!',
+    //   likes: 10,
+    //   comments: 2,
+    //   timestamp: '2024-10-14 12:30',
+    //   profileImage: 'https://randomuser.me/api/portraits/women/1.jpg',
+    //   commentList: [
+    //     { user: 'AliVeli', text: 'Harika bir yorum!', profileImage: 'https://randomuser.me/api/portraits/men/2.jpg' }
+    //   ],
+    //   isLiked: false,
+    //   scale: new Animated.Value(1), // Initialize scale for animation
+    // },
+    // {
+    //   id: '4',
+    //   user: 'AliVeli',
+    //   text: 'KLU öğrenci topluluklarına nasıl katılabilirim? KLUCAMPUS’te topluluklara erişim var mı?',
+    //   likes: 5,
+    //   comments: 3,
+    //   timestamp: '2024-10-14 12:35',
+    //   profileImage: 'https://randomuser.me/api/portraits/men/3.jpg',
+    //   commentList: [
+    //     { user: 'Haticehj', text: 'Topluluklar sayfası var.', profileImage: 'https://randomuser.me/api/portraits/women/1.jpg' },
+    //     { user: 'ZeynepS', text: 'Oradan katılabilirsiniz.', profileImage: 'https://randomuser.me/api/portraits/women/4.jpg' }
+    //   ],
+    //   isLiked: false,
+    //   scale: new Animated.Value(1), // Initialize scale for animation
+    // },
+    // {
+    //   id: '5',
+    //   user: 'Haticehj',
+    //   text: 'KLUCAMPUS uygulaması sayesinde kampüsteki tüm etkinliklerden haberdar olabiliyorum. Gerçekten çok faydalı!',
+    //   likes: 10,
+    //   comments: 2,
+    //   timestamp: '2024-10-14 12:30',
+    //   profileImage: 'https://randomuser.me/api/portraits/women/1.jpg',
+    //   commentList: [
+    //     { user: 'AliVeli', text: 'Harika bir yorum!', profileImage: 'https://randomuser.me/api/portraits/men/2.jpg' }
+    //   ],
+    //   isLiked: false,
+    //   scale: new Animated.Value(1), // Initialize scale for animation
+    // },
+    // {
+    //   id: '6',
+    //   user: 'AliVeli',
+    //   text: 'KLU öğrenci topluluklarına nasıl katılabilirim? KLUCAMPUS’te topluluklara erişim var mı?',
+    //   likes: 5,
+    //   comments: 3,
+    //   timestamp: '2024-10-14 12:35',
+    //   profileImage: 'https://randomuser.me/api/portraits/men/3.jpg',
+    //   commentList: [
+    //     { user: 'Haticehj', text: 'Topluluklar sayfası var.', profileImage: 'https://randomuser.me/api/portraits/women/1.jpg' },
+    //     { user: 'ZeynepS', text: 'Oradan katılabilirsiniz.', profileImage: 'https://randomuser.me/api/portraits/women/4.jpg' }
+    //   ],
+    //   isLiked: false,
+    //   scale: new Animated.Value(1), // Initialize scale for animation
+    // },
+  ]);
+
+  
+
+  const YorumEkle = () => {
+  if (!newComment || newComment.trim() === '') return;
+
+  const newCommentObject = {
+    user: 'Kullanıcı Adı',
+    text: newComment,
+    profileImage: 'https://example.com/default-profile.png',
+  };
+
+  const updatedMessage = {
+    ...selectedMessage,
+    commentList: [...selectedMessage.commentList, newCommentObject],
+  };
+
+  setSelectedMessage(updatedMessage);
+  setNewComment('');
+};
+
+
+
+  const handleSend = () => {
+    if (newMessage.trim()) {
+      const newMsg = {
+        id: (messages.length + 1).toString(),
+        user: 'You', 
+        text: newMessage,
+        likes: 0,
+        comments: 0,
+        timestamp: new Date().toLocaleString(),
+        profileImage: 'https://randomuser.me/api/portraits/men/1.jpg', 
+        commentList: [],
+        isLiked: false,
+        scale: new Animated.Value(1), // Initialize scale for new message
+      };
+      setMessages([newMsg, ...messages]);
+      setNewMessage('');
+    }
+  };
+
+  const openMessage = (message) => {
+    setSelectedMessage(message);
+    setModalVisible(true);
+  };
+
+  const handleAddComment = () => {
+    if (newComment.trim() && selectedMessage) {
+      const updatedMessages = messages.map((msg) => {
+        if (msg.id === selectedMessage.id) {
+          return {
+            ...msg,
+            comments: msg.comments + 1,
+            commentList: [
+              ...msg.commentList,
+              { user: 'You', text: newComment, profileImage: 'https://randomuser.me/api/portraits/men/1.jpg' },
+            ],
+          };
+        }
+        return msg;
+      });
+      setMessages(updatedMessages);
+      setNewComment('');
+    }
+  };
+
+  const handleLikeMessage = (message) => {
+    const updatedMessages = messages.map((msg) => {
+      if (msg.id === message.id) {
+        const newScale = msg.isLiked ? 1 : 1.5; // Scale up for like, down for unlike
+        // Trigger animation
+        Animated.spring(msg.scale, {
+          toValue: newScale,
+          useNativeDriver: true,
+        }).start(() => {
+          // Reset to original size after the animation
+          if (msg.isLiked) {
+            Animated.spring(msg.scale, {
+              toValue: 1,
+              useNativeDriver: true,
+            }).start();
+          }
+        });
+        
+        return {
+          ...msg,
+          likes: msg.isLiked ? msg.likes - 1 : msg.likes + 1,
+          isLiked: !msg.isLiked,
+        };
+      }
+      return msg;
+    });
+    setMessages(updatedMessages);
+  };
+
+  const renderItem = ({ item }) => (
+    <TouchableOpacity onPress={() => openMessage(item)}>
+      <View style={styles.messageContainer}>
+        <Image source={{ uri: item.profileImage }} style={styles.profileImage} />
+        <View style={styles.messageContent}>
+          <View style={styles.headerRow}>
+            <Text style={styles.username}>{item.user}</Text>
+            <Text style={styles.timestamp}>{item.timestamp}</Text>
+          </View>
+          <Text style={styles.messageText}>{item.text}</Text>
+          <View style={styles.actionRow}>
+            <TouchableOpacity onPress={() => handleLikeMessage(item)}>
+              <Animated.View style={{ transform: [{ scale: item.scale }] }}>
+                <Animated.Text style={[styles.actionText, item.isLiked ? styles.liked : null]}>
+                  ❤️ {item.likes}
+                </Animated.Text>
+              </Animated.View>
+            </TouchableOpacity>
+            <Text style={styles.actionText}>💬 {item.comments}</Text>
+          </View>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* Üniversite Gündemi Bölümü */}
+      <View style={styles.agendaContainer}>
+        <Text style={styles.agendaTitle}>📅 Üniversite Gündemi</Text>
+        <Text style={styles.agendaText}>Bu haftanın gündemi:</Text>
+        <View style={styles.eventList}>
+          <View style={styles.eventItem}>
+            <MaterialIcons name="event" size={20} color="#fff" />
+            <Text style={styles.eventText}>📍 Öğrenci Topluluğu Tanıtım Günü - 21 Ekim</Text>
+          </View>
+        </View>
+      </View>
+      
+      <FlatList
+        data={messages}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id} 
+      />
+      <View style={styles.inputContainer}>
+        <TextInput
+          placeholderTextColor="black"
+          style={styles.input}
+          placeholder="Mesajınızı yazın..."
+          value={newMessage}
+          onChangeText={setNewMessage}
+        />
+        <IconButton
+          icon="send"
+          size={24}
+          onPress={handleSend}
+        />
+      </View>
+
+      <Modal
+  animationType="slide"
+  transparent={false}
+  visible={modalVisible}
+  onRequestClose={() => setModalVisible(false)}
+>
+  {selectedMessage ? (
+    <View style={styles.modalContainer}>
+      {/* Kapat butonu yukarıda */}
+      <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+        <Text style={styles.closeButtonText}>Kapat</Text>
+      </TouchableOpacity>
+
+      {/* Profil görseli ortada */}
+      <View style={styles.imageContainer}>
+        <Image source={{ uri: selectedMessage.profileImage }} style={styles.modalProfileImage} />
+      </View>
+
+      {/* Kullanıcı adı, metin ve tarih */}
+      <Text style={styles.modalUsername}>{selectedMessage.user}</Text>
+      <Text style={styles.modalText}>{selectedMessage.text}</Text>
+      <Text style={styles.modalTimestamp}>{selectedMessage.timestamp}</Text>
+
+      <Text style={styles.commentTitle}>Yorumlar:</Text>
+      <FlatList
+        data={selectedMessage.commentList}
+        renderItem={({ item }) => (
+          <View style={styles.commentContainer}>
+            <Image source={{ uri: item.profileImage }} style={styles.commentProfileImage} />
+            <Text style={styles.commentItem}>{item.user}: {item.text}</Text>
+          </View>
+        )}
+        keyExtractor={(item, index) => index.toString()}
+      />
+
+      <View style={styles.commentInputContainer}>
+        <TextInput
+          style={styles.commentInput}
+          placeholder="Yorum ekleyin..."
+          placeholderTextColor="#757575"
+          value={newComment}
+          onChangeText={setNewComment}
+        />
+        <TouchableOpacity style={styles.commentButton} onPress={YorumEkle}>
+          <Text style={styles.commentButtonText}>Ekle</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  ) : (
+    <View style={styles.modalContainer}>
+      <Text style={styles.modalText}>Seçili bir mesaj yok.</Text>
+    </View>
+  )}
+</Modal>
+
+
+
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  agendaContainer: {
+    backgroundColor: '#2196F3',
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  agendaTitle: {
+    fontSize: 20,
+    color: '#fff',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  agendaText: {
+    fontSize: 16,
+    color: '#fff',
+    textAlign: 'center',
+  },
+  commentButton: {
+    marginLeft: 10,
+    padding: 10,
+    backgroundColor: '#2e7d32', // Buton için koyu yeşil
+    borderRadius: 5,
+  },
+  commentButtonText: {
+    color: '#ffffff', // Beyaz yazı
+    fontWeight: 'bold',
+  },
+  eventList: {
+    marginTop: 10,
+  },
+  eventItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  closeButton: {
+    alignSelf: 'flex-start',
+    marginBottom: 20,
+    backgroundColor: '#dc3545', // Kapat butonu rengi
+    padding: 10,
+    borderRadius: 5,
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  imageContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalProfileImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40, // Daire şeklinde profil resmi
+  },
+  modalUsername: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 5,
+  },
+  modalText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  modalTimestamp: {
+    fontSize: 12,
+    color: '#6c757d',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  commentTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginVertical: 10,
+  },
+  commentContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  commentProfileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
+  },
+  commentItem: {
+    fontSize: 14,
+  },
+  commentInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  commentInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ced4da',
+    borderRadius: 5,
+    padding: 10,
+    marginRight: 10,
+  },
+  commentButton: {
+    backgroundColor: '#28a745', // Yorum ekle butonu rengi
+    padding: 10,
+    borderRadius: 5,
+  },
+  commentButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  eventText: {
+    color: '#fff',
+    marginLeft: 5,
+  },
+  messageContainer: {
+    flexDirection: 'row',
+    padding: 10,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  profileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
+  },
+  messageContent: {
+    flex: 1,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  username: {
+    fontWeight: 'bold',
+  },
+  timestamp: {
+    color: '#888',
+    fontSize: 12,
+  },
+  messageText: {
+    marginVertical: 5,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 5,
+  },
+  actionText: {
+    fontSize: 16,
+    marginRight: 10,
+  },
+  liked: {
+    color: 'red',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0f4f7', // Soft light grey-blue background
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    marginVertical: 10,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 1 },
+    // shadowOpacity: 0.2,
+    // shadowRadius: 1.41,
+    // elevation: 2,
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    color: '#003366', // Dark blue for text input
+    backgroundColor: '#fff', // White background for text input
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#dfe4ea', // Light border for input box
+  },
+  iconButton: {
+    marginLeft: 10,
+    backgroundColor: '#003366', // Dark blue for the send button background
+    borderRadius: 50,
+    padding: 10,
+  },
+  icon: {
+    color: '#ffffff', // White for the icon color
+  },
+ modalContainer: {
+    flex: 1,
+    backgroundColor: '#f8f9fa', // Arka plan rengi
+    padding: 20,
+  },
+  modalProfileImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginBottom: 10,
+  },
+  modalUsername: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#2196F3', // Kullanıcı adının rengi
+  },
+  modalText: {
+    fontSize: 16,
+    marginVertical: 10,
+    color: '#333',
+  },
+  modalTimestamp: {
+    fontSize: 12,
+    color: '#888',
+  },
+  commentTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2196F3', // Başlık rengi
+    marginVertical: 10,
+  },
+  commentContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5,
+    padding: 5,
+    backgroundColor: '#f0f0f0', // Yorum arka plan rengi
+    borderRadius: 5,
+  },
+  commentProfileImage: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    marginRight: 10,
+  },
+  commentItem: {
+    fontSize: 14,
+    color: '#333',
+  },
+  commentInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    backgroundColor: '#ffffff', // Beyaz arka plan
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#2e7d32', // Kırklareli Üniversitesi'nin yeşil rengi
+    marginBottom: 10,
+  },
+  commentInput: {
+    flex: 1,
+    height: 40,
+    borderColor: '#2e7d32',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    color: '#2e7d32', // Yeşil metin rengi
+    backgroundColor: '#f1f8e9', // Hafif yeşil arka plan
+  },
+});
+
+export default MessageScreen;
