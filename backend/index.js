@@ -4,12 +4,14 @@ const db = require("./config/db");
 const app = express();
 
 // CORS ayarlarını güncelle
-app.use(cors({
+app.use(
+  cors({
     origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: false
-}));
+    credentials: false,
+  })
+);
 
 // Timeout middleware ekle
 app.use((req, res, next) => {
@@ -139,6 +141,10 @@ app.get("/", (req, res) => {
 // Kitap route'larını ekle
 const kitaplarRoutes = require("./routes/kitaplar");
 app.use("/api", kitaplarRoutes);
+
+// Gündem konuları route'larını ekle
+const trendRoutes = require("./routes/trendRoutes");
+app.use("/api/trends", trendRoutes);
 
 // Test endpoint
 app.get("/test", async (req, res) => {
@@ -323,6 +329,10 @@ app.use((err, req, res, next) => {
     message: err.message,
   });
 });
+
+// Message routes
+const messageRoutes = require("./routes/messageRoutes");
+app.use("/api/messages", messageRoutes);
 
 const PORT = process.env.PORT || 3000;
 

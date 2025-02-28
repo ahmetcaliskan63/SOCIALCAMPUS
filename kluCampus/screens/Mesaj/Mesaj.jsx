@@ -24,6 +24,7 @@ import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
+import { messageService } from '../../services/api';
 
 const API_URL = 'https://klucampus-production.up.railway.app/api'; // Backend sunucunuzun IP adresi ve portu
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
