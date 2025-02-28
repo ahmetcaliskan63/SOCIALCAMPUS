@@ -71,41 +71,30 @@ app.post("/kullanicilar", async (req, res) => {
 
     console.log("Dönüştürülmüş veri:", userData);
 
-    const connection = await db.getConnection();
-    
-    try {
-      await connection.beginTransaction();
+    // Promise pool kullanarak direkt sorgu yap
+    const [result] = await db.query(
+      "INSERT INTO kullanicilar (tam_ad, fakulte, fakulte_adi, bolum, sartlari_kabul, sozlesmeyi_kabul) VALUES (?, ?, ?, ?, ?, ?)",
+      [
+        userData.tam_ad,
+        userData.fakulte,
+        userData.fakulte_adi,
+        userData.bolum,
+        userData.sartlari_kabul,
+        userData.sozlesmeyi_kabul
+      ]
+    );
 
-      const [result] = await connection.query(
-        "INSERT INTO kullanicilar (tam_ad, fakulte, fakulte_adi, bolum, sartlari_kabul, sozlesmeyi_kabul) VALUES (?, ?, ?, ?, ?, ?)",
-        [
-          userData.tam_ad,
-          userData.fakulte,
-          userData.fakulte_adi,
-          userData.bolum,
-          userData.sartlari_kabul,
-          userData.sozlesmeyi_kabul
-        ]
-      );
+    const [users] = await db.query(
+      "SELECT * FROM kullanicilar WHERE id = ?",
+      [result.insertId]
+    );
 
-      const [users] = await connection.query(
-        "SELECT * FROM kullanicilar WHERE id = ?",
-        [result.insertId]
-      );
+    res.json({
+      success: true,
+      message: "Kullanıcı oluşturuldu",
+      data: users[0]
+    });
 
-      await connection.commit();
-
-      res.json({
-        success: true,
-        message: "Kullanıcı oluşturuldu",
-        data: users[0]
-      });
-    } catch (error) {
-      await connection.rollback();
-      throw error;
-    } finally {
-      connection.release();
-    }
   } catch (error) {
     console.error("Detaylı hata:", error);
     res.status(500).json({
