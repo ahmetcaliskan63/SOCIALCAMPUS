@@ -8,7 +8,8 @@ import { BlurView } from 'expo-blur';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { bookService } from '../../services/api';
 
-const API_URL = 'http://192.168.133.242:5000/api'; // Express API URL'miz
+// Update API URL to use Railway deployment
+const API_URL = 'https://socialcampus-production.up.railway.app/api/v1';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const IMGUR_CLIENT_ID = '0250b8b91223111';
 const CACHE_DURATION = 15 * 60 * 1000;

@@ -3,14 +3,118 @@ const cors = require("cors");
 const db = require("./config/db");
 const app = express();
 
-// CORS ayarları
+// CORS ayarlarını güncelle
 app.use(
   cors({
     origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: false,
   })
 );
+
+// Timeout middleware ekle
+app.use((req, res, next) => {
+  req.setTimeout(30000); // 30 saniye
+  res.setTimeout(30000);
+  next();
+});
+
+// Hata yakalama middleware'ini güncelle
+app.use((err, req, res, next) => {
+  console.error("Hata detayı:", {
+    hataKodu: err.code,
+    hataMesaji: err.message,
+    yol: req.path,
+    metod: req.method,
+  });
+
+  // Network hatalarını yakala
+  if (err.code === "ECONNRESET" || err.code === "ECONNABORTED") {
+    return res.status(503).json({
+      success: false,
+      error: "Bağlantı hatası",
+      message: "Sunucu bağlantısı kesildi, lütfen tekrar deneyin",
+    });
+  }
+
+  res.status(err.status || 500).json({
+    success: false,
+    error: "İşlem başarısız",
+    message: err.message || "Sunucu hatası oluştu",
+  });
+});
+
+// Mesaj endpoint'lerini güncelle
+app.get("/api/messages", async (req, res) => {
+  try {
+    const [messages] = await db.query(
+      `SELECT 
+        m.*, 
+        COUNT(mb.mesaj_id) as begeni_sayisi 
+      FROM mesajlar m 
+      LEFT JOIN mesaj_begeniler mb ON m.id = mb.mesaj_id 
+      GROUP BY m.id 
+      ORDER BY m.olusturma_tarihi DESC 
+      LIMIT 50`
+    );
+
+    if (!messages) {
+      return res.status(404).json({
+        success: false,
+        message: "Mesaj bulunamadı",
+      });
+    }
+
+    res.json({
+      success: true,
+      data: messages,
+    });
+  } catch (error) {
+    console.error("Mesaj getirme hatası:", error);
+    res.status(500).json({
+      success: false,
+      error: "Mesajlar alınamadı",
+      message: "Sunucu hatası oluştu, lütfen tekrar deneyin",
+    });
+  }
+});
+
+// Mesaj oluşturma endpoint'ini güncelle
+app.post("/api/messages", async (req, res) => {
+  try {
+    if (!req.body.icerik || !req.body.kullanici_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Gerekli alanlar eksik",
+      });
+    }
+
+    const messageData = {
+      id: req.body.id,
+      kullanici_id: req.body.kullanici_id,
+      kullanici_adi: req.body.kullanici_adi,
+      icerik: req.body.icerik,
+    };
+
+    const [result] = await db.query("INSERT INTO mesajlar SET ?", [
+      messageData,
+    ]);
+
+    res.status(201).json({
+      success: true,
+      message: "Mesaj başarıyla oluşturuldu",
+      data: { ...messageData, id: result.insertId },
+    });
+  } catch (error) {
+    console.error("Mesaj oluşturma hatası:", error);
+    res.status(500).json({
+      success: false,
+      error: "Mesaj oluşturulamadı",
+      message: "Sunucu hatası oluştu, lütfen tekrar deneyin",
+    });
+  }
+});
 
 app.use(express.json());
 
@@ -25,9 +129,22 @@ app.get("/", (req, res) => {
   res.json({ status: "API is running" });
 });
 
+// Root endpoint
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "KLU Campus API çalışıyor",
+    version: "1.0.0",
+  });
+});
+
 // Kitap route'larını ekle
 const kitaplarRoutes = require("./routes/kitaplar");
 app.use("/api", kitaplarRoutes);
+
+// Gündem konuları route'larını ekle
+const trendRoutes = require("./routes/trendRoutes");
+app.use("/api/trends", trendRoutes);
 
 // Test endpoint
 app.get("/test", async (req, res) => {
@@ -49,23 +166,21 @@ app.get("/test", async (req, res) => {
 // Kullanıcı oluşturma endpoint'i
 app.post("/kullanicilar", async (req, res) => {
   try {
-    // Gelen ham veriyi detaylı logla
     console.log("Ham veri detayları:", req.body);
 
-    // Veriyi kontrol et ve alan isimlerini eşleştir
     const userData = {
-      tam_ad: req.body.tam_ad || "",
-      fakulte: req.body.faculty || "", // faculty -> fakulte
-      fakulte_adi: req.body.faculty || "", // faculty -> fakulte_adi
-      bolum: req.body.department || "", // department -> bolum
-      sartlari_kabul: req.body.termsAccepted ? 1 : 0, // termsAccepted -> sartlari_kabul
-      sozlesmeyi_kabul: req.body.eulaAccepted ? 1 : 0, // eulaAccepted -> sozlesmeyi_kabul
+      tam_ad: req.body.tam_ad,
+      fakulte: req.body.fakulte,
+      fakulte_adi: req.body.fakulte_adi,
+      bolum: req.body.bolum,
+      sartlari_kabul: req.body.sartlari_kabul ? 1 : 0,
+      sozlesmeyi_kabul: req.body.sozlesmeyi_kabul ? 1 : 0,
     };
 
     console.log("Dönüştürülmüş veri:", userData);
 
-    // Veritabanı sorgusu
-    const [result] = await db.execute(
+    // Promise pool kullanarak direkt sorgu yap
+    const [result] = await db.query(
       "INSERT INTO kullanicilar (tam_ad, fakulte, fakulte_adi, bolum, sartlari_kabul, sozlesmeyi_kabul) VALUES (?, ?, ?, ?, ?, ?)",
       [
         userData.tam_ad,
@@ -77,13 +192,9 @@ app.post("/kullanicilar", async (req, res) => {
       ]
     );
 
-    console.log("Insert result:", result);
-
-    // Oluşturulan kullanıcının bilgilerini al
-    const [users] = await db.execute(
-      "SELECT * FROM kullanicilar WHERE id = ?",
-      [result.insertId]
-    );
+    const [users] = await db.query("SELECT * FROM kullanicilar WHERE id = ?", [
+      result.insertId,
+    ]);
 
     res.json({
       success: true,
@@ -93,8 +204,119 @@ app.post("/kullanicilar", async (req, res) => {
   } catch (error) {
     console.error("Detaylı hata:", error);
     res.status(500).json({
-      error: error.message,
-      details: "Sunucu hatası oluştu",
+      success: false,
+      error: "Kullanıcı oluşturulamadı",
+      message: error.message,
+    });
+  }
+});
+
+// Mesaj oluşturma endpoint'i
+app.post("/api/messages", async (req, res) => {
+  try {
+    const messageData = {
+      id: req.body.id,
+      kullanici_id: req.body.kullanici_id,
+      kullanici_adi: req.body.kullanici_adi,
+      icerik: req.body.icerik,
+    };
+
+    const [result] = await db.query(
+      "INSERT INTO mesajlar (id, kullanici_id, kullanici_adi, icerik) VALUES (?, ?, ?, ?)",
+      [
+        messageData.id,
+        messageData.kullanici_id,
+        messageData.kullanici_adi,
+        messageData.icerik,
+      ]
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "Mesaj oluşturuldu",
+      data: messageData,
+    });
+  } catch (error) {
+    console.error("Mesaj oluşturma hatası:", error);
+    res.status(500).json({
+      success: false,
+      error: "Mesaj oluşturulamadı",
+      message: error.message,
+    });
+  }
+});
+
+// Tüm mesajları getirme endpoint'i
+app.get("/api/messages", async (req, res) => {
+  try {
+    const [messages] = await db.query(
+      "SELECT m.*, COUNT(mb.mesaj_id) as begeni_sayisi FROM mesajlar m " +
+        "LEFT JOIN mesaj_begeniler mb ON m.id = mb.mesaj_id " +
+        "GROUP BY m.id " +
+        "ORDER BY m.olusturma_tarihi DESC"
+    );
+
+    res.json({
+      success: true,
+      data: messages,
+    });
+  } catch (error) {
+    console.error("Mesaj getirme hatası:", error);
+    res.status(500).json({
+      success: false,
+      error: "Mesajlar alınamadı",
+      message: error.message,
+    });
+  }
+});
+
+// Kullanıcının mesajlarını getirme endpoint'i
+app.get("/api/messages/user/:kullanici_id", async (req, res) => {
+  try {
+    const [messages] = await db.query(
+      "SELECT * FROM mesajlar WHERE kullanici_id = ? ORDER BY olusturma_tarihi DESC",
+      [req.params.kullanici_id]
+    );
+
+    res.json({
+      success: true,
+      data: messages,
+    });
+  } catch (error) {
+    console.error("Kullanıcı mesajları getirme hatası:", error);
+    res.status(500).json({
+      success: false,
+      error: "Kullanıcı mesajları alınamadı",
+      message: error.message,
+    });
+  }
+});
+
+// Mesaj silme endpoint'i
+app.delete("/api/messages/:id", async (req, res) => {
+  try {
+    const [result] = await db.query(
+      "DELETE FROM mesajlar WHERE id = ? AND kullanici_id = ?",
+      [req.params.id, req.body.kullanici_id]
+    );
+
+    if (result.affectedRows > 0) {
+      res.json({
+        success: true,
+        message: "Mesaj başarıyla silindi",
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "Mesaj bulunamadı veya silme yetkisi yok",
+      });
+    }
+  } catch (error) {
+    console.error("Mesaj silme hatası:", error);
+    res.status(500).json({
+      success: false,
+      error: "Mesaj silinemedi",
+      message: error.message,
     });
   }
 });
@@ -107,6 +329,10 @@ app.use((err, req, res, next) => {
     message: err.message,
   });
 });
+
+// Message routes
+const messageRoutes = require("./routes/messageRoutes");
+app.use("/api/messages", messageRoutes);
 
 const PORT = process.env.PORT || 3000;
 

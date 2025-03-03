@@ -94,13 +94,11 @@ router.get("/", async (req, res) => {
     });
   } catch (error) {
     console.error("Get messages error:", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Mesajlar getirilemedi",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Mesajlar getirilemedi",
+      error: error.message,
+    });
   }
 });
 
